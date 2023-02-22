@@ -1,13 +1,16 @@
 const crypto = require('crypto');
 
-function decrypt(cipherText, key) {
-    const decipher = crypto.createDecipher('aes-256-cbc', key);
-    let decrypted = decipher.update(cipherText, 'hex', 'utf8');
-    decrypted += decipher.final('utf8');
-    return decrypted;
+function decryptStringWithAES256(cipher, key) {
+    const [ivString, encryptedString] = cipher.split(':');
+    const iv = Buffer.from(ivString, 'hex');
+    const encryptedText = Buffer.from(encryptedString, 'hex');
+    const decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(key), iv);
+    let decrypted = decipher.update(encryptedText);
+    decrypted = Buffer.concat([decrypted, decipher.final()]);
+    return decrypted.toString();
 }
 
-const cipherText = 'a8c1b343bf9dfe8dfd824d73e4fd741e';
-const key = '6c04ed45440dd0af7dbae548107ef514';
-const plainText = decrypt(cipherText, key);
-console.log(plainText); // prints the decrypted plain text
+const myCipher = '70caff4fe7435137afdc660ae99e9ab6:6c85a49c4dd367d4e8a0fd09ed88b8ef';
+const myKey = 'azertyuiopqsdfghjklmwxcvbn123456';
+const decryptedString = decryptStringWithAES256(myCipher, myKey);
+console.log(decryptedString);
